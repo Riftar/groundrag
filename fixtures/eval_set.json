@@ -1,0 +1,41 @@
+{
+  "answerable": [
+    {
+      "query": "How many vacation days per month?",
+      "expect_doc": "handbook.md",
+      "expect_fragment": "1.5 days per month"
+    },
+    {
+      "query": "What are the support hours?",
+      "expect_doc": "product_notes.md",
+      "expect_fragment": "09:00 to 17:00 UTC"
+    },
+    {
+      "query": "How often should the fern be repotted?",
+      "expect_doc": "plant_guide.md",
+      "expect_fragment": "every second spring"
+    },
+    {
+      "query": "minimum password length",
+      "expect_doc": "handbook.md",
+      "expect_fragment": "12 characters"
+    },
+    {
+      "query": "warranty duration cyclone router",
+      "expect_doc": "product_notes.md",
+      "expect_fragment": "two year"
+    },
+    {
+      "query": "yellow fronds what does it mean",
+      "expect_doc": "plant_guide.md",
+      "expect_fragment": "Overwatering"
+    }
+  ],
+  "unanswerable": [
+    {"query": "What is the CEO's favorite color?"},
+    {"query": "stock price forecast next quarter"},
+    {"query": "recipe for banana bread"},
+    {"query": "how tall is the Eiffel Tower"},
+    {"query": "company revenue 2025 breakdown by region"}
+  ]
+}
