@@ -1,0 +1,46 @@
+{
+  "_provenance": "Facts verified against the committed RFC texts (grep-checked, 2026-10-13). Unanswerable items are deliberately out-of-corpus or near-miss traps sharing vocabulary with the corpus.",
+  "answerable": [
+    {"query": "maximum length of a DNS label", "expect_doc": "rfc1035.txt", "expect_fragment": "63 octets or less"},
+    {"query": "maximum length of a full domain name", "expect_doc": "rfc1035.txt", "expect_fragment": "255 octets or less"},
+    {"query": "which port does SMTP listen on", "expect_doc": "rfc5321.txt", "expect_fragment": "port 25"},
+    {"query": "which port do DNS servers use", "expect_doc": "rfc1035.txt", "expect_fragment": "port 53"},
+    {"query": "what does the 421 status code mean", "expect_doc": "rfc9110.txt", "expect_fragment": "Misdirected Request"},
+    {"query": "when can a client expect a 100 Continue response", "expect_doc": "rfc9110.txt", "expect_fragment": "100 (Continue)"},
+    {"query": "what does the Retry-After header indicate", "expect_doc": "rfc9110.txt", "expect_fragment": "how long the user agent ought to wait"},
+    {"query": "what is chunked transfer coding", "expect_doc": "rfc9112.txt", "expect_fragment": "series of chunks"},
+    {"query": "is the Host header required in HTTP/1.1", "expect_doc": "rfc9112.txt", "expect_fragment": "MUST send a Host header field"},
+    {"query": "what happened to obsolete line folding in headers", "expect_doc": "rfc9112.txt", "expect_fragment": "deprecates such line"},
+    {"query": "DNS record type for a canonical name alias", "expect_doc": "rfc1035.txt", "expect_fragment": "CNAME"},
+    {"query": "what values are allowed for a DNS TTL", "expect_doc": "rfc1035.txt", "expect_fragment": "signed 32 bit number"},
+    {"query": "SMTP command to verify a mailbox", "expect_doc": "rfc5321.txt", "expect_fragment": "VRFY"},
+    {"query": "SMTP command to expand a mailing list", "expect_doc": "rfc5321.txt", "expect_fragment": "EXPN"},
+    {"query": "purpose of the TE header in HTTP", "expect_doc": "rfc9112.txt", "expect_fragment": "TE:"},
+    {"query": "how does a server indicate transfer encoding options", "expect_doc": "rfc9110.txt", "expect_fragment": "transfer-coding"},
+    {"query": "record type that marks the start of a zone of authority", "expect_doc": "rfc1035.txt", "expect_fragment": "SOA"},
+    {"query": "what should an SMTP server do about pending listens", "expect_doc": "rfc5321.txt", "expect_fragment": "pending listen"},
+    {"query": "meaning of the MB experimental record type", "expect_doc": "rfc1035.txt", "expect_fragment": "mailbox domain name"},
+    {"query": "what does a trailer section contain in chunked coding", "expect_doc": "rfc9112.txt", "expect_fragment": "trailer fields"}
+  ],
+  "unanswerable": [
+    {"query": "how do I configure nginx worker processes"},
+    {"query": "recipe for sourdough bread"},
+    {"query": "how tall is the Eiffel Tower"}
+  ],
+  "hard_traps": [
+    {"query": "what is the price of a domain registration",
+     "note": "pricing absent from corpus; domain+registration vocab overlaps RFC 1035 admin text"},
+    {"query": "SMTP command to schedule delayed delivery",
+     "note": "vocab overlap with SMTP chunks; answer needs corpus knowledge (no such command exists)"},
+    {"query": "maximum size of an HTTP cookie",
+     "note": "cookie size is RFC 6265, not in corpus; lexical judge cannot know"},
+    {"query": "DNS record type for geographic location",
+     "note": "LOC exists but is not in RFC 1035; plausible-sounding, absent"},
+    {"query": "default SSH port number",
+     "note": "SSH is absent from corpus; shared vocab (port, number, default) grounds falsely"},
+    {"query": "what year was HTTP/2 published as an RFC",
+     "note": "RFC 7540 not indexed; year-questions ground on date headers"},
+    {"query": "port number for HTTPS secure connections",
+     "note": "443 not stated in these RFCs; port+connection vocab overlaps"}
+  ]
+}

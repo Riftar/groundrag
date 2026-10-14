@@ -64,9 +64,30 @@ def terms(text: str) -> list[str]:
 # Ingestion
 # --------------------------------------------------------------------------
 
+def _group_tables(paras: list[str]) -> list[str]:
+    """Merge runs of short single-line paragraphs (table rows separated by
+    blank lines) into single blocks so tables survive chunking."""
+    out: list[str] = []
+    run: list[str] = []
+    for p in paras:
+        single = "\n" not in p and len(p) < 80
+        if single:
+            run.append(p)
+        else:
+            if run:
+                out.append("\n".join(run))
+                run = []
+            out.append(p)
+    if run:
+        out.append("\n".join(run))
+    return out
+
+
 def chunk_text(text: str) -> list[str]:
-    """Paragraph-aware chunking: split on blank lines, merge small ones."""
+    """Paragraph-aware chunking: split on blank lines, keep tables whole,
+    merge small paragraphs up to ~CHUNK_TARGET chars."""
     paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    paras = _group_tables(paras)
     chunks, cur = [], ""
     for p in paras:
         if cur and len(cur) + len(p) + 2 > CHUNK_TARGET:
@@ -161,13 +182,55 @@ class Verdict:
     log: list[str] = field(default_factory=list)
 
 
-GROUNDED_MIN = 1 / 3    # >= 1/3 of query terms in the best chunk
+GROUNDED_MIN = 1 / 3    # >= 1/3 of query-term MASS in the best chunk
 REWRITE_MIN = 0.15      # some signal worth one rewrite attempt
 MAX_ITERATIONS = 2
 
 
+def _df(db_path: str, q_terms: list[str]) -> dict[str, int]:
+    """Document frequency per query term across the indexed chunks."""
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    df = {}
+    try:
+        for t in set(q_terms):
+            row = conn.execute(
+                "SELECT count(*) FROM chunks WHERE chunks MATCH ?",
+                (f'"{t}"',)).fetchone()
+            df[t] = row[0] if row else 0
+    finally:
+        conn.close()
+    return df
+
+
+def score_hits(db_path: str, hits: list[Hit], q_terms: list[str]) -> None:
+    """Set hit.overlap to the IDF-weighted fraction of query-term mass
+    present in each chunk. Rare terms carry the verdict; terms that appear
+    everywhere (port, number, server) carry almost none. This is what
+    separates 'all words present in some unrelated chunk' from grounding."""
+    df = _df(db_path, q_terms)
+    n_chunks = None
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        n_chunks = conn.execute("SELECT count(*) FROM chunks").fetchone()[0]
+    finally:
+        conn.close()
+    weights = {}
+    if n_chunks >= 50:
+        # IDF needs corpus statistics to mean anything; on small corpora
+        # (toy sets, single docs) fall back to unweighted overlap.
+        for t in set(q_terms):
+            weights[t] = math.log(1 + n_chunks / (1 + df[t]))
+    else:
+        weights = {t: 1.0 for t in set(q_terms)}
+    total_w = sum(weights.values()) or 1.0
+    for h in hits:
+        chunk_terms = set(terms(h.text))
+        hit_w = sum(w for t, w in weights.items() if t in chunk_terms)
+        h.overlap = hit_w / total_w
+
+
 def judge(hits: list[Hit], query: str) -> str:
-    """Deterministic grounding judge: overlap of query terms in best hit."""
+    """Deterministic grounding judge: IDF-weighted term-mass coverage."""
     if not hits:
         return "abstain"
     best = max(h.overlap for h in hits)
@@ -195,7 +258,9 @@ def ask(db_path: str, query: str, k: int = 3,
     for iteration in range(1, MAX_ITERATIONS + 1):
         v.iterations = iteration
         hits = retrieve(db_path, current, k)
+        q_terms = terms(current)
         if hits:
+            score_hits(db_path, hits, q_terms)
             v.best_overlap = max(h.overlap for h in hits)
         verdict = judge_fn(hits, current)
         v.log.append(f"iter{iteration}: q='{current}' best_overlap="
