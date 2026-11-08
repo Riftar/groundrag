@@ -61,14 +61,12 @@ gate, the abstention log, and the eval harness integration.
   its 30-case labeled gold set (facts grep-verified against the texts)
 - `scripts/make_corpus_large.py` — RFC fetcher/cleaner (provenance)
 - `tests/test_rag.py` — offline suite
-- `PLAN.md` — problem, goals, 3 checkpoints, rollback
 
 ## Honest ceiling
 
 Pure lexical retrieval fails on paraphrase ("car" never matches
-"vehicle"). That ceiling is documented in PLAN.md (Checkpoint 3) and
-measured by the eval harness rather than hidden behind an embedding
-index you can't inspect.
+"vehicle"). That ceiling is measured by the eval harness rather than hidden behind
+an embedding index you can't inspect.
 
 ## License
 
